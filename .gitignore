@@ -1,0 +1,6 @@
+solver/__pycache__
+solver/dump.py
+fig-gen/__pycache__
+fig-gen/media
+materials
+.mypy_cache
