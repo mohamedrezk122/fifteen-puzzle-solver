@@ -1,93 +1,69 @@
-import pyglet
-import math
-from pyglet import shapes
-import time
-WIDTH= 600
-HEIGHT= 600
-TILE_WIDTH = 50
-TILE_HEIGHT = 50 
-TILE_COLOR = (255, 97, 97)
-BORDER_COLOR = (0 , 0 ,0 )
+from manim import * 
+from utils import shape , generate_default_goal
+from instances import convert_coordinates_to_directions
 
-window = pyglet.window.Window(WIDTH, HEIGHT)
-batch = pyglet.graphics.Batch()
+config["frame_height"] = 2
+config["frame_width"] = 3
 
-class Tile:
-    def __init__(self, x,y,number, batch):
-        self.x = x 
-        self.y = y 
-        self.tile = shapes.Rectangle(self.x, self.y, TILE_WIDTH, 
-                            TILE_HEIGHT, color=TILE_COLOR, batch= batch)
+SQUARE_LEN = .3 
+scale_factor = 1.2
 
-        self.label = pyglet.text.Label( str(number),
-                          font_name='Times New Roman', font_size=20,
-                          x=self.x+ 0.5* TILE_WIDTH, y=self.y+ 0.5* TILE_HEIGHT,
-                          anchor_x='center', anchor_y='center', batch=batch)
-        self.last_x = 0 
-        self.last_y = 0 
-        self.is_moving = True
+class Animation(Scene):
 
-    def move_a_unit(self,direction):
-        MOVES = {"UP"   : (self.x , self.y+TILE_HEIGHT),
-                 "DOWN" : (self.x , self.y-TILE_HEIGHT) ,
-                 "RIGHT": (self.x +TILE_WIDTH, self.y)  ,
-                 "LEFT" : (self.x-TILE_WIDTH, self.y)  }
-
-        move_x, move_y = MOVES[direction]
-
-        step_size = 30
-        step_x = (move_x - self.x) / step_size
-        step_y = (move_y - self.y) / step_size
-
-        # if self.is_moving:
-
-        distance_x = move_x - self.x 
-        distance_y = move_y - self.y
-        # Check if the shape has reached the target position
-        # if abs(distance_x) <= abs(step_x) and abs(distance_y) <= abs(step_y):
-        if (tile.x == move_x) and (tile.y == move_y):
-            self.x = move_x 
-            self.y = move_y
-            self.is_moving = False
-            print("Shape has reached the target position. Movement stopped.")
-        else:
-            # Move the shape towards the target position
-            if abs(distance_x) > abs(step_x):
-                # self.x += step_x
-                self.tile.x += step_x
-                self.label.x += step_x
-            if abs(distance_y) > abs(step_y):
-                # self.y += step_y
-                self.tile.y += step_y
-                self.label.y += step_y
-
-    def draw(self):
-        self.tile.draw()
-        self.label.draw()
-
-    @staticmethod
-    def distance(pt1, pt2):
-        return math.sqrt((pt1[0]-pt2[0])**2 +  (pt1[1]-pt2[1])**2)
-
-
-tile = Tile(200, 200, 12, batch)
-
-
-@window.event
-def on_draw():
-    window.clear()
-    # tile.move_a_unit("UP")
-    # time.sleep(.2)
-    # tile.move_a_unit("DOWN")
+    def box(self , arr):
+        grid =  VGroup()
+        coords_top =  [2*SQUARE_LEN ,SQUARE_LEN,0, -SQUARE_LEN]
+        coords_right = [2*SQUARE_LEN*1.1 ,SQUARE_LEN*1.2,0, -SQUARE_LEN*.95]
+        for i , row in enumerate(arr):
+            line = VGroup()
+            for j,entry in enumerate(row): 
+                color = RED
+                if entry == len(arr) * len(arr[0]) :
+                    line.add(VGroup())
+                    continue
+                if entry % 2 ==0 :
+                    color = BLUE
+                square = Square(stroke_color = color ,
+                         side_length=SQUARE_LEN).shift(DOWN*SQUARE_LEN*i*1.15 + RIGHT*j*SQUARE_LEN*1.15)
+                # print(square.get_center())
+                # print(RIGHT)
+                square.set_fill(color,opacity=1)
+                text = Tex(str(entry)).move_to(square.get_center()).scale(.4)
+                line.add(VGroup(square, text))
+            grid.add(line)
+        return grid  
     
-    batch.draw()
+    def move_tile_a_unit(self, tile ,direction):
 
-def update(dt):
-    # tile.move_a_unit("UP")
-    # time.sleep(.5)
-    tile.move_a_unit("RIGHT")
-    # tile.is_moving = True
-    # tile.move_a_unit("RIGHT")
-    
-pyglet.clock.schedule_interval(update, 1 / 60)
-pyglet.app.run()
+        TILE_LEN = tile[0].side_length *1.15
+        x, y,_ =  tile.get_center()
+        MOVES = {"UP"   : [x , y+TILE_LEN,0],
+                 "DOWN" : [x , y-TILE_LEN,0],
+                 "RIGHT": [x +TILE_LEN, y,0] ,
+                 "LEFT" : [x -TILE_LEN, y,0] }
+
+        return tile.animate.move_to(MOVES[direction])
+
+    def construct(self):
+        start =        [[15 , 16  ,14 , 13],
+                        [1   ,3  , 2  , 4],
+                        [7  , 8  , 6  , 5],
+                        [11  ,9 ,  10 , 12]]
+
+        grid = self.box(start)
+        moves = iterative_deepening_algorithm(start , 
+                            generate_default_goal(shape(start)) , "manhattan distance")["moves"]
+        self.add(grid.shift(UP*.5+ LEFT*.4))
+        directions = convert_coordinates_to_directions(moves)
+        directions.insert(0,1)
+        for i in range(1, len(moves)):
+            past = moves[i-1]
+            coord = moves[i]
+            direction = directions[i]
+            tile = grid[coord[0]][coord[1]]
+
+            self.play(self.move_tile_a_unit(tile, direction), run_time=.3)
+
+            grid[past[0]][past[1]] , grid[coord[0]][coord[1]] =  \
+            grid[coord[0]][coord[1]] , grid[past[0]][past[1]] 
+            

@@ -13,14 +13,14 @@ def convert_coordinates_to_directions(coordinates):
         coord =  coordinates[i]
         if coord[0] == past[0] : 
             if (coord[1] - past[1]) == 1 :
-                moves.append("UP")
-            else:
-                moves.append("DOWN")
-        elif coord[1] == past[1] :
-            if (coord[0] - past[0]) == 1  : 
                 moves.append("LEFT")
             else:
                 moves.append("RIGHT")
+        elif coord[1] == past[1] :
+            if (coord[0] - past[0]) == 1  : 
+                moves.append("UP")
+            else:
+                moves.append("DOWN")
     return moves 
 
 def compute_randomness_coefficient(state):
@@ -58,7 +58,7 @@ def shuffle_puzzle(goal_state):
         # print(is_solvable(_state, goal_state))
         if is_solvable(_state, goal_state):
             break
-    print(compute_randomness_coefficient(_state))
+    # print(compute_randomness_coefficient(_state))
     return _state
 
 

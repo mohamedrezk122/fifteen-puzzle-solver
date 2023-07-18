@@ -4,3 +4,4 @@ fig-gen/__pycache__
 fig-gen/media
 materials
 .mypy_cache
+solver/media

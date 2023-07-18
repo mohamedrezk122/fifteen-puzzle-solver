@@ -24,7 +24,6 @@ def get_blank_square_parity(initial_state , final_state):
     blank_final_y   , blank_final_x   = get_blank_coordinates(final_state)
     blank_manhattan_distance = (abs(blank_final_x - blank_initial_x) + 
                                 abs(blank_final_y - blank_initial_y))
-    print("b" , blank_manhattan_distance)
     blank_parity = PARITY[blank_manhattan_distance % 2]
     return blank_parity 
 

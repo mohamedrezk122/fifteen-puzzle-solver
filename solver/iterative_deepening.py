@@ -9,18 +9,9 @@ import json
 func_time = 0
 neighbours_table = {}
 
-# f(p) = g(p) < h(p)
-#      ? g(p) + h(p)
-#      : (g(p) + (2*w - 1) * h(p)) / w}
-
-
-def cost_function(g, node, goal, heuristic_method):
-    w = 3
-    h = compute_heuristic(node, goal, heuristic_method)
-    if g >= h:
-        return g + (2*w -1)*h / w 
-    return g + h
-
+def dynamic_weighting_function():
+    # naive implementation for now
+    return 81 , 19 
 
 def equals_from_move(state_1 , state_2, move):
     blank_y , blank_x = where(state_1, shape(state_1)[0]*shape(state_1)[1])
@@ -49,12 +40,16 @@ def contains(path, node):
             return True
     return False
 
-def search(path,expanded_nodes, goal, g, bound, heuristic_method):
+def search(path,expanded_nodes, goal, g, bound, heuristic_method, weighted):
 
+    W_h, W_g = 1 , 1
     expanded_nodes[0] += 1 
     state = path[0][1]
-    f = 19*g + 81*compute_heuristic(state, goal, heuristic_method)
-    # f = cost_function(g, state , goal, heuristic_method)
+    if weighted :
+        W_h,W_g = dynamic_weighting_function()
+        
+    f = W_g*g + W_h*compute_heuristic(state, goal, heuristic_method)
+
     if f > bound : 
         return "NOT YET", f
 
@@ -65,7 +60,7 @@ def search(path,expanded_nodes, goal, g, bound, heuristic_method):
     for tile , neighbour in get_neighbour_configurations(state) :
         if not contains(path,neighbour):
             path.appendleft((tile, neighbour))
-            temp = search(path,expanded_nodes, goal, g+1, bound, heuristic_method)
+            temp = search(path,expanded_nodes, goal, g+1, bound, heuristic_method, weighted)
             if temp[0] == "FOUND": 
                 return "FOUND" , bound 
 
@@ -76,16 +71,16 @@ def search(path,expanded_nodes, goal, g, bound, heuristic_method):
     return "NOT YET", min_f
 
 @timeit
-def iterative_deepening_algorithm(start , goal , heuristic_method):
+def iterative_deepening_algorithm(start , goal , heuristic_method, weighted=False):
 
     path = deque([(get_blank_coordinates(start) , start)])
-    bound =  81*compute_heuristic(start, goal, heuristic_method)
+    bound = compute_heuristic(start, goal, heuristic_method)
     expanded_nodes = deque([0]) # get use of call by reference 
     while True:
-        status, limit =  search(path,expanded_nodes, goal, 0, bound, heuristic_method)
+        status, limit =  search(path,expanded_nodes, goal, 0, bound, heuristic_method, weighted)
         if status == "FOUND" :
             moves = list(zip(*path))[0][::-1]          # (y,x)
-            print("neighbours function time", func_time)
+            print(" Neighbours function time", func_time)
             return  {"moves" : moves , "depth": len(moves)-1  , "expanded nodes": expanded_nodes[0]}
         elif limit == float('inf'):
             return "NO SOLUTION"

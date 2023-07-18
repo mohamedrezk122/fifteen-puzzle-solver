@@ -4,39 +4,78 @@ from iterative_deepening import  iterative_deepening_algorithm
 from utils import *
 from performance import * 
 from check import is_solvable
+import argparse
+import sys
+
+
+figlet = r"""
+         _ ____                      _
+        / | ___| _ __  _   _ _______| | ___
+        | |___ \| '_ \| | | |_  /_  / |/ _ \
+        | |___) | |_) | |_| |/ / / /| |  __/
+        |_|____/| .__/ \__,_/___/___|_|\___|
+                |_|
+
+"""
+
+def solve(start, end , heuristic_method, weighted):
+
+    print(" start state:")
+    pretty_print(start)
+    print("-"*50)
+    solvable = is_solvable(start, end)
+    print(" Is solvable: ", solvable)
+    if not solvable :
+        return 
+
+    print(" Heuristic method : ", heuristic_method)
+    print("-"*50)
+    print(" Heuristic value  : ", compute_heuristic(start, end, heuristic_method))
+    print("-"*50)
+    print(" Solving ...")
+    solution = iterative_deepening_algorithm(start , end, heuristic_method, weighted)
+    if weighted :
+        print(" Weighted : ", weighted)
+        print("-"*50)
+    print(" Depth: ", solution["depth"] )
+    print("-"*50)
+    print(" Expanded nodes: ", solution["expanded nodes"])
+    print("-"*50)
+    print(" Effective branching factor : ", compute_effective_branching(solution["expanded nodes"], solution["depth"]))
+    print("-"*50)
+    print(" Moves : " , solution["moves"])
 
 
 
-start_test =        [  [ 1  , 2  , 3  , 4  ],
-                    [ 5  , 16  , 6  , 8  ],
-                    [ 9  , 10 , 7 , 12 ],
-                    [ 13 , 14 , 11 , 15 ]]
+def main():
+    try :
+        from termcolor import colored
+        print(colored(figlet, 'red'))
+    except ImportError as ie:
+        print(figlet)
+    print("\tThis script is written by Mohamed Rezk.\n")
+    parser = argparse.ArgumentParser(prog='pq puzzle solver')
+    parser.add_argument('-f', '--filename' , type= str , help="file containing puzzle delimited with double space")           
+    parser.add_argument('-r', '--random'   , action="store_true", help ="generate random instance from shape")  
+    parser.add_argument('-s', '--shape'    , nargs='+', type = int, help ="shape of random instance default (4,4)")  
+    parser.add_argument("-w", "--weighted", action="store_true",
+                    help="use weights in IDA*")    
+    args = parser.parse_args()
+    if args.filename :
+        start = read_state_from_file(args.filename)
+        end   = generate_default_goal(shape(start)) 
+    elif args.random : 
+        if args.shape :
+            end = generate_default_goal(args.shape)
+        else:
+            end = generate_default_goal((4,4))
+        start = shuffle_puzzle(end)
+    else:
+        parser.print_help(sys.stderr)
+        return
+
+    solve(start, end, "manhattan distance", weighted=args.weighted)
+
+main() 
 
 
-start_test3 =       [[15 , 16  ,14 , 13],
-                    [1   ,3  , 2  , 4],
-                    [7  , 8  , 6  , 5],
-                    [11  ,9 ,  10 , 12]]
-
-
-start_test2 =       [[ 12  , 1  , 3  , 4  ],
-                    [ 2  , 13  , 14  , 5  ],
-                    [ 11  , 10 , 8 , 6 ],
-                    [ 9 , 15 , 7 , 16 ]]
-
-end_test   =        [[ 1  , 2  , 3  , 4  ],
-                    [ 5  , 6  , 7  , 8  ],
-                    [ 9  , 10 , 11 , 12 ],
-                    [ 13 , 14 , 15 , 16 ]]
-
-
-# pretty_print(start_test)
-# print(is_solvable(start_test2 , end_test))
-# print(is_solvable(start_test , end_test))
-# test = shuffle_puzzle(end_test )
-# pretty_print(test)
-print(compute_heuristic(start_test3, end_test , "manhattan distance"))
-pretty_print(start_test3)
-print(iterative_deepening_algorithm(start_test3 , end_test, "manhattan distance"))
-# # print(iterative_deepening_algorithm(test , end_test, "hamming distance"))
-# # print(iterative_deepening_algorithm(test , end_test, "gaschnig heuristic"))

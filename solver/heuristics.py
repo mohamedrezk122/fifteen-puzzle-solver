@@ -61,29 +61,13 @@ def linear_conflict_heuristic(initial_state , final_state):
     """
     manhattan distance with linear conflict correction 
     """
-    sum_of_conflicts =  0
-    
-    for y , raw in enumerate(initial_state) :
-        
-        max_conflict = 0 
-        max_conflict_tile = None
-
-        for x , tile in enumerate(row):
-            c = count_conflicts(row , tile)
-            if c > max_conflict :
-                max_conflict = c 
-                max_conflict_tile = tile
-
-
-
-    sum_of_conflicts *= 2
-    return sum_of_conflicts + manhattan_heuristic(initial_state , final_state)
+    raise NotImplementedError()
 
 def walking_distance_heuristic(initial_state, final_state):
-    pass
+    raise NotImplementedError()
 
 def inversion_distance_heuristic(initial_state, final_state):
-    pass
+    raise NotImplementedError()
 
 
 def compute_heuristic(initial_state, final_state , method):
@@ -98,24 +82,5 @@ def compute_heuristic(initial_state, final_state , method):
 
     return methods[method](initial_state , final_state)
 
-
-# s = np.array([[1 , 2 , 3],
-#               [7 , 9 , 4],
-#               [8 , 6 , 5 ]])
-
-# e = np.array([[1 , 2 , 3],
-#               [8 , 9 , 4],
-#               [7 , 6 , 5 ]])
-
-# e1 = np.array([[1 , 2 , 3],
-#               [4 , 5 , 6],
-#               [7 , 8 , 9]])
-if __name__ == "__main__" :
-    
-    # print(manhattan_distance_heuristic(start , end))
-    # print(compute_effective_branching(52 , 5))
-    print(manhattan_heuristic(s, e))
-    print(hamming_heuristic(s, e))
-    print(gaschnig_heuristic(s, e))
     
 

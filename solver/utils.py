@@ -1,15 +1,27 @@
 import copy
 
+def generate_default_goal(puzzle_shape):
+
+    goal = []
+    x = 0
+    for i in range(puzzle_shape[0]) :
+        line = []
+        for j in range(puzzle_shape[1]):
+            x += 1
+            line.append(x)
+        goal.append(line)
+    return goal
 
 def pretty_print(state):
+    print("-"*15)
     for row in state: 
         for element in row :
             if len(str(element)) == 1: 
-                print(element,"  ", end="")
+                print(" ",element,"  ", end="")
             else:
-                print(element," ", end="")
+                print(" ",element," ", end="")
         print()
-    print("-"*15)
+    # print("-"*15)
 
 
 def shape(state):
@@ -95,23 +107,9 @@ def get_blank_neighbours(state):
     blank_y , blank_x = get_blank_coordinates(state)
     return get_tile_neighbours(blank_x, blank_y, shape_x, shape_y)
 
-
-@state_to_tuple
-def test(state):
+def read_state_from_file(filename):
+    state = []
+    with open(filename, 'r') as f:
+        for line in f.readlines():
+            state.append([int(x) for x in line.split('  ')])
     return state
-if __name__ == "__main__" :
-    end_test   =        [[ 1  , 2  , 3  , 4  ],
-                    [ 5  , 6  , 7  , 8  ],
-                    [ 9  , 10 , 11 , 12 ],
-                    [ 13 , 14 , 15 , 16 ]]
-
-    # print(shape(end_test))
-    # pretty_print(end_test)
-    # print(get_blank_coordinates(end_test))
-    # print(state_to_string(end_test))
-    print(test(end_test))
-    # flatten(end_test)
-    # print(transpose(end_test))
-    # print(where(end_test, 16))
-    # pretty_print(swap(end_test , (3,3) , (1,1)))
-    # pretty_print(end_test)
